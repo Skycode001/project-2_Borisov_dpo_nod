@@ -31,3 +31,9 @@ __pycache__/
 
 # Database metadata - local user data
 db_meta.json
+
+# Файлы окружения
+.env
+
+# Записи asciinema
+*.cast

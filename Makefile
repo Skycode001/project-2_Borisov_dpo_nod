@@ -6,6 +6,10 @@ install:
 project:
 	python3 -m src.primitive_db.main
 
+# Альтернативная команда database (как в задании)
+database:
+	python3 -m src.primitive_db.main
+
 # Запуск тестов (будет позже)
 test:
 	python3 -m pytest tests/ -v

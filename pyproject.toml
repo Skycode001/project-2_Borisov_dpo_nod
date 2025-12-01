@@ -10,7 +10,8 @@ packages = [
 ]
 
 [tool.poetry.scripts]
-project = "src.primitive_db.main:main"
+project = "src.primitive_db.main:run"
+database = "src.primitive_db.main:run"
 
 [tool.poetry.dependencies]
 python = "^3.8"

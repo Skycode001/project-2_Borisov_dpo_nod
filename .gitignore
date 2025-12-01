@@ -28,3 +28,6 @@ __pycache__/
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+
+# Database metadata - local user data
+db_meta.json

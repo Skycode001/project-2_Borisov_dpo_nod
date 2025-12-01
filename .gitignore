@@ -37,3 +37,6 @@ db_meta.json
 
 # Записи asciinema
 *.cast
+
+# Data directory
+data/

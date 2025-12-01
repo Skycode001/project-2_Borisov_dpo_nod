@@ -48,6 +48,9 @@ poetry run database
 - str - строки
 - bool - логические значения (True/False)
 
+## Аскинема с примером установки пакета, запуска БД, создания, проверки и удаления таблицы.
+[![asciicast](https://asciinema.org/a/V5zQckptHgseXK34PCa3dWAP3.svg)](https://asciinema.org/a/V5zQckptHgseXK34PCa3dWAP3)
+
 ## Пример использования
 ```bash
 # Запуск приложения

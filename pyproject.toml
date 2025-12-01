@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "project-2_Borisov_dpo_nod"
+version = "0.1.0"
+description = "Primitive database console application"
+authors = ["Ваше Имя <email@example.com>"]
+readme = "README.md"
+
+packages = [
+    { include = "src" },
+]
+
+[tool.poetry.scripts]
+project = "src.primitive_db.main:main"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+prettytable = "^3.8.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

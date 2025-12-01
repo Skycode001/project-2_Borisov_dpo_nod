@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """
-Основной модуль приложения Primitive Database
+Точка входа в приложение Primitive Database
 """
 
-def main():
-    """Основная функция приложения"""
-    print("DB project is running!")
+from .engine import main
 
 if __name__ == "__main__":
     main()

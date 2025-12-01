@@ -4,6 +4,7 @@
 """
 
 import json
+import os
 
 
 def load_metadata(filepath="db_meta.json"):
@@ -31,5 +32,44 @@ def save_metadata(data, filepath="db_meta.json"):
         data: Данные для сохранения
         filepath: Путь к файлу для сохранения
     """
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def load_table_data(table_name, data_dir="data"):
+    """
+    Загружает данные таблицы из JSON-файла.
+    
+    Args:
+        table_name: Имя таблицы
+        data_dir: Директория с данными
+        
+    Returns:
+        list: Данные таблицы или пустой список
+    """
+    # Создаем директорию если не существует
+    os.makedirs(data_dir, exist_ok=True)
+    
+    filepath = os.path.join(data_dir, f"{table_name}.json")
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+
+def save_table_data(table_name, data, data_dir="data"):
+    """
+    Сохраняет данные таблицы в JSON-файл.
+    
+    Args:
+        table_name: Имя таблицы
+        data: Данные для сохранения
+        data_dir: Директория с данными
+    """
+    # Создаем директорию если не существует
+    os.makedirs(data_dir, exist_ok=True)
+    
+    filepath = os.path.join(data_dir, f"{table_name}.json")
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)

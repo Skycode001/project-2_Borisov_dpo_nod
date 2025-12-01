@@ -23,3 +23,24 @@ ruff = "^0.1.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# Настройки Ruff для линтинга и форматирования
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    "venv",
+    ".venv", 
+    "dist",
+    "__pycache__",
+    ".git",
+    ".github",
+    ".DS_Store"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"

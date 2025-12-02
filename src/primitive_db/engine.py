@@ -8,6 +8,20 @@ import shlex
 from prettytable import PrettyTable
 
 from . import core, parser, utils
+from .decorators import create_cacher
+
+# Создаем кэшер для результатов запросов
+cache_result = create_cacher()
+
+
+def clear_table_cache(table_name):
+    """Очищает кэш для конкретной таблицы."""
+    if hasattr(cache_result, '__closure__') and cache_result.__closure__:
+        cache_dict = cache_result.__closure__[0].cell_contents
+        keys_to_remove = [key for key in cache_dict.keys() 
+                         if key.startswith(f"{table_name}_")]
+        for key in keys_to_remove:
+            cache_dict.pop(key, None)
 
 
 def print_help():
@@ -203,12 +217,19 @@ def run():
                 if len(args) != 1:
                     print("Ошибка: Использование: drop_table <таблица>")
                     continue
-                
-                metadata, message = core.drop_table(metadata, args[0])
-                print(message)
-                
-                if "успешно" in message.lower():
-                    utils.save_metadata(metadata)
+
+                result = core.drop_table(metadata, args[0])
+
+                if isinstance(result, tuple) and len(result) == 2:
+                    metadata, message = result
+
+                    # Выводим сообщение только если не "Операция отменена."
+                    if "отменена" not in message.lower():
+                        print(message)
+                    
+                    if "успешно" in message.lower():
+                        utils.save_metadata(metadata)
+                        clear_table_cache(args[0])
                     
             elif command == "list_tables":
                 print(core.list_tables(metadata))
@@ -233,6 +254,7 @@ def run():
                 print(message)
                 if "успешно" in message.lower():
                     utils.save_table_data(table_name, table_data)
+                    clear_table_cache(table_name)
                 
             elif command == "select":
                 table_name, where_clause = parse_select_command(args)
@@ -245,8 +267,19 @@ def run():
                     print(msg)
                     continue
                 
-                table_data = utils.load_table_data(table_name)
-                filtered_data = core.select(table_data, where_clause)
+                # Запросы без условия НЕ кэшируем
+                if where_clause is None:
+                    table_data = utils.load_table_data(table_name)
+                    filtered_data = core.select(table_data, where_clause)
+                else:
+                    # Кэшируем только запросы с условиями
+                    cache_key = f"{table_name}_{str(where_clause)}"
+                    
+                    def execute_select():
+                        table_data = utils.load_table_data(table_name)
+                        return core.select(table_data, where_clause)
+                    
+                    filtered_data = cache_result(cache_key, execute_select)
                 
                 print_table_as_prettytable(filtered_data)
                 
@@ -265,8 +298,9 @@ def run():
                 updated_data = core.update(
                     table_data, set_clause, where_clause
                 )
-                
+
                 utils.save_table_data(table_name, updated_data)
+                clear_table_cache(table_name)
                 success_msg = (
                     f'Запись в таблице "{table_name}" '
                     f'успешно обновлена.'
@@ -285,14 +319,17 @@ def run():
                     continue
                 
                 table_data = utils.load_table_data(table_name)
-                updated_data = core.delete(table_data, where_clause)
+                result = core.delete(table_data, where_clause)
                 
-                utils.save_table_data(table_name, updated_data)
-                success_msg = (
-                    f'Запись успешно удалена '
-                    f'из таблицы "{table_name}".'
-                )
-                print(success_msg)
+                utils.save_table_data(table_name, result)
+                clear_table_cache(table_name)
+
+                if len(result) < len(table_data):
+                    success_msg = (
+                        f'Запись успешно удалена '
+                        f'из таблицы "{table_name}".'
+                    )
+                    print(success_msg)
                 
             elif command == "info":
                 if len(args) != 1:

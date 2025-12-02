@@ -5,7 +5,10 @@
 
 from prettytable import PrettyTable
 
+from .decorators import confirm_action, handle_db_errors, log_time
 
+
+@handle_db_errors
 def create_table(metadata, table_name, columns):
     """
     Создает новую таблицу в метаданных.
@@ -58,6 +61,8 @@ def create_table(metadata, table_name, columns):
     return metadata, success_msg
 
 
+@handle_db_errors
+@confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
     """
     Удаляет таблицу из метаданных.
@@ -67,8 +72,9 @@ def drop_table(metadata, table_name):
         table_name: Имя таблицы для удаления
         
     Returns:
-        tuple: (обновленные метаданные, сообщение об ошибке или успехе)
+        tuple: (обновленные метаданные, сообщение) или (metadata, "Отменено")
     """
+    # Если функция вызвалась - значит подтверждение получено
     if not table_name or not table_name.strip():
         return metadata, "Ошибка: Имя таблицы не может быть пустым."
     
@@ -79,6 +85,7 @@ def drop_table(metadata, table_name):
     return metadata, f'Таблица "{table_name}" успешно удалена.'
 
 
+@handle_db_errors
 def list_tables(metadata):
     """
     Возвращает форматированный список всех таблиц.
@@ -103,6 +110,7 @@ def list_tables(metadata):
     return table
 
 
+@handle_db_errors
 def info_table(metadata, table_name, table_data):
     """
     Выводит информацию о таблице.
@@ -129,6 +137,8 @@ def info_table(metadata, table_name, table_data):
     )
 
 
+@handle_db_errors
+@log_time
 def insert(metadata, table_name, values, table_data):
     """
     Вставляет запись в таблицу.
@@ -221,16 +231,11 @@ def insert(metadata, table_name, values, table_data):
     return table_data, success_msg
 
 
+@handle_db_errors
+@log_time
 def select(table_data, where_clause=None):
     """
     Выбирает записи из таблицы.
-    
-    Args:
-        table_data: Данные таблицы
-        where_clause: Условие фильтрации или None
-        
-    Returns:
-        list: Отфильтрованные данные
     """
     if not table_data:
         return []
@@ -239,16 +244,17 @@ def select(table_data, where_clause=None):
         return table_data
     
     column, value = next(iter(where_clause.items()))
-    value_str = str(value)
+    value_str = str(value).lower()  # Приводим к нижнему регистру
     
     filtered_data = [
         record for record in table_data 
-        if str(record.get(column)) == value_str
+        if str(record.get(column, "")).lower() == value_str
     ]
     
     return filtered_data
 
 
+@handle_db_errors
 def update(table_data, set_clause, where_clause):
     """
     Обновляет записи в таблице.
@@ -267,37 +273,35 @@ def update(table_data, set_clause, where_clause):
     set_column, new_value = next(iter(set_clause.items()))
     where_column, where_value = next(iter(where_clause.items()))
     
-    where_value_str = str(where_value)
+    # ПРИВОДИМ К НИЖНЕМУ РЕГИСТРУ для сравнения
+    where_value_str = str(where_value).lower()
     updated_count = 0
     
     for record in table_data:
-        if str(record.get(where_column)) == where_value_str:
+        # Тоже приводим к нижнему регистру
+        record_value = str(record.get(where_column, "")).lower()
+        if record_value == where_value_str:
             record[set_column] = new_value
             updated_count += 1
     
     return table_data
 
 
+@handle_db_errors
+@confirm_action("удаление записей")
 def delete(table_data, where_clause):
     """
     Удаляет записи из таблицы.
-    
-    Args:
-        table_data: Данные таблицы
-        where_clause: Условие для поиска записей
-        
-    Returns:
-        list: Обновленные данные таблицы
     """
     if not table_data or not where_clause:
         return table_data
     
     column, value = next(iter(where_clause.items()))
-    value_str = str(value)
+    value_str = str(value).lower()  # Приводим к нижнему регистру для поиска
     
     filtered_data = [
         record for record in table_data 
-        if str(record.get(column)) != value_str
+        if str(record.get(column, "")).lower() != value_str
     ]
     
     return filtered_data

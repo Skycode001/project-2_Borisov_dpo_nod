@@ -8,46 +8,39 @@ import shlex
 from prettytable import PrettyTable
 
 from . import core, parser, utils
+from .constants import (
+    CACHE_KEY_SEPARATOR,
+    CANCELLED_INDICATOR,
+    COMMAND_PROMPT,
+    CREATE_TABLE_USAGE,
+    DB_TITLE,
+    DELETE_FROM_KEYWORD,
+    DELETE_USAGE,
+    DELETE_WHERE_KEYWORD,
+    DROP_TABLE_USAGE,
+    EXIT_MESSAGE,
+    GENERAL_COMMANDS_TITLE,
+    HELP_TITLE,
+    INFO_USAGE,
+    INSERT_KEYWORD,
+    INSERT_USAGE,
+    INTERRUPT_MESSAGE,
+    MIN_DELETE_ARGS,
+    MIN_INSERT_ARGS,
+    MIN_SELECT_ARGS,
+    MIN_UPDATE_ARGS,
+    NO_DATA_MESSAGE,
+    PARSE_ERROR_MESSAGE,
+    SELECT_KEYWORD,
+    SELECT_USAGE,
+    SUCCESS_INDICATOR,
+    UNEXPECTED_ERROR_MESSAGE,
+    UNKNOWN_COMMAND_MESSAGE,
+    UPDATE_SET_KEYWORD,
+    UPDATE_USAGE,
+    UPDATE_WHERE_KEYWORD,
+)
 from .decorators import create_cacher
-
-# Константы для устранения "магических чисел" и строк
-DB_TITLE = "***База данных***"
-COMMAND_PROMPT = ">>>Введите команду: "
-EXIT_MESSAGE = "Выход из программы..."
-CACHE_KEY_SEPARATOR = "_"
-CANCELLED_INDICATOR = "отменена"
-SUCCESS_INDICATOR = "успешно"
-YES_RESPONSE = "y"
-HELP_TITLE = "\n***Операции с данными***"
-GENERAL_COMMANDS_TITLE = "\nОбщие команды:"
-UNKNOWN_COMMAND_MESSAGE = "Функции '{}' нет. Попробуйте снова."
-PARSE_ERROR_MESSAGE = "Ошибка парсинга: {}"
-UNEXPECTED_ERROR_MESSAGE = "Произошла ошибка: {}"
-NO_DATA_MESSAGE = "Нет данных для отображения."
-INTERRUPT_MESSAGE = "\n\nВыход из программы..."
-
-# Команды для проверки в парсерах
-INSERT_KEYWORD = "into"
-SELECT_KEYWORD = "from"
-UPDATE_SET_KEYWORD = "set"
-UPDATE_WHERE_KEYWORD = "where"
-DELETE_FROM_KEYWORD = "from"
-DELETE_WHERE_KEYWORD = "where"
-
-# Минимальное количество аргументов для команд
-MIN_INSERT_ARGS = 4
-MIN_SELECT_ARGS = 2
-MIN_UPDATE_ARGS = 6
-MIN_DELETE_ARGS = 4
-
-# Сообщения об ошибках использования
-CREATE_TABLE_USAGE = "create_table <таблица> <столбец1:тип> ..."
-DROP_TABLE_USAGE = "drop_table <таблица>"
-INSERT_USAGE = "insert into <таблица> values (значение1, значение2, ...)"
-SELECT_USAGE = "select from <таблица> [where <условие>]"
-UPDATE_USAGE = "update <таблица> set <столбец>=<значение> where <условие>"
-DELETE_USAGE = "delete from <таблица> where <условие>"
-INFO_USAGE = "info <таблица>"
 
 # Создаем кэшер для результатов запросов
 cache_result = create_cacher()

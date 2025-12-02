@@ -5,17 +5,15 @@
 
 import time
 
-# Константы для устранения "магических строк"
-CONFIRMATION_PROMPT_TEMPLATE = 'Вы уверены, что хотите выполнить "{}"? [y/n]: '
-CANCELLATION_MESSAGE = "Операция отменена."
-UNEXPECTED_ERROR_MESSAGE = "Произошла непредвиденная ошибка: {}"
-VALIDATION_ERROR_MESSAGE = "Ошибка валидации: {}"
-KEY_ERROR_MESSAGE = "Ошибка: Таблица или столбец {} не найден."
-FILE_NOT_FOUND_MESSAGE = (
-    "Ошибка: Файл данных не найден. "
-    "Возможно, база данных не инициализирована."
+from .constants import (
+    CANCELLATION_MESSAGE,
+    CONFIRMATION_PROMPT_TEMPLATE,
+    FILE_NOT_FOUND_MESSAGE,
+    KEY_ERROR_MESSAGE,
+    TIME_FORMAT_TEMPLATE,
+    UNEXPECTED_ERROR_MESSAGE,
+    VALIDATION_ERROR_MESSAGE,
 )
-TIME_FORMAT_TEMPLATE = "Функция {} выполнилась за {:.3f} секунд."
 
 
 def handle_db_errors(func):

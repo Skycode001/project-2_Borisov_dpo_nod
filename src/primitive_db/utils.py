@@ -6,10 +6,11 @@
 import json
 import os
 
-# Константы для устранения "магических чисел" и строк
-META_FILE = "db_meta.json"
-DATA_DIR = "data"
-DEFAULT_ENCODING = "utf-8"
+from .constants import (
+    DATA_DIR,
+    DEFAULT_ENCODING,
+    META_FILE,
+)
 
 
 def load_metadata(filepath=META_FILE):

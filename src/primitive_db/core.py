@@ -5,30 +5,30 @@
 
 from prettytable import PrettyTable
 
+from .constants import (
+    BOOL_TYPE_ERROR,
+    BOOLEAN_FALSE_VALUES,
+    BOOLEAN_TRUE_VALUES,
+    COLUMN_FORMAT_ERROR,
+    DEFAULT_ID_COLUMN,
+    DEFAULT_START_ID,
+    EMPTY_COLUMN_NAME_ERROR,
+    EMPTY_TABLE_ERROR,
+    EMPTY_TABLE_MESSAGE,
+    INFO_TEMPLATE,
+    INVALID_TYPE_ERROR,
+    INVALID_TYPE_FOR_COLUMN_ERROR,
+    MIN_COLUMNS_ERROR,
+    SUCCESS_CREATE_MESSAGE,
+    SUCCESS_DROP_MESSAGE,
+    SUCCESS_INSERT_MESSAGE,
+    TABLE_EXISTS_ERROR,
+    TABLE_NOT_FOUND_ERROR,
+    UNSUPPORTED_TYPE_ERROR,
+    VALID_DATA_TYPES,
+    VALUES_COUNT_ERROR,
+)
 from .decorators import confirm_action, handle_db_errors, log_time
-
-# Константы для устранения "магических чисел" и строк
-DEFAULT_ID_COLUMN = "ID:int"
-VALID_DATA_TYPES = {"int", "str", "bool"}
-BOOLEAN_TRUE_VALUES = ['true', '1', 'yes']
-BOOLEAN_FALSE_VALUES = ['false', '0', 'no']
-DEFAULT_START_ID = 1
-EMPTY_TABLE_MESSAGE = "Нет созданных таблиц."
-EMPTY_TABLE_ERROR = "Ошибка: Имя таблицы не может быть пустым."
-TABLE_EXISTS_ERROR = 'Ошибка: Таблица "{}" уже существует.'
-MIN_COLUMNS_ERROR = "Ошибка: Таблица должна содержать хотя бы один столбец."
-COLUMN_FORMAT_ERROR = 'Некорректный формат столбца: {}. Используйте "имя:тип"'
-EMPTY_COLUMN_NAME_ERROR = "Имя столбца не может быть пустым в: {}"
-INVALID_TYPE_ERROR = 'Неподдерживаемый тип данных: {}. Используйте int, str, bool.'
-TABLE_NOT_FOUND_ERROR = 'Ошибка: Таблица "{}" не существует.'
-SUCCESS_CREATE_MESSAGE = 'Таблица "{}" успешно создана со столбцами: {}'
-SUCCESS_DROP_MESSAGE = 'Таблица "{}" успешно удалена.'
-VALUES_COUNT_ERROR = "Ошибка: Ожидается {} значений, получено {}."
-BOOL_TYPE_ERROR = 'Ошибка: Столбец "{}" ожидает bool, получено {}'
-UNSUPPORTED_TYPE_ERROR = "Неподдерживаемый тип: {}"
-INVALID_TYPE_FOR_COLUMN_ERROR = 'Ошибка: Неверный тип для столбца {}: {}'
-SUCCESS_INSERT_MESSAGE = 'Запись с ID={} успешно добавлена в таблицу "{}".'
-INFO_TEMPLATE = "Таблица: {}\nСтолбцы: {}\nКоличество записей: {}"
 
 
 @handle_db_errors

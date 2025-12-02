@@ -6,8 +6,13 @@
 import json
 import os
 
+# Константы для устранения "магических чисел" и строк
+META_FILE = "db_meta.json"
+DATA_DIR = "data"
+DEFAULT_ENCODING = "utf-8"
 
-def load_metadata(filepath="db_meta.json"):
+
+def load_metadata(filepath=META_FILE):
     """
     Загружает метаданные из JSON-файла.
     
@@ -18,13 +23,13 @@ def load_metadata(filepath="db_meta.json"):
         dict: Загруженные метаданные или пустой словарь
     """
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, 'r', encoding=DEFAULT_ENCODING) as f:
             return json.load(f)
     except FileNotFoundError:
         return {}
 
 
-def save_metadata(data, filepath="db_meta.json"):
+def save_metadata(data, filepath=META_FILE):
     """
     Сохраняет метаданные в JSON-файл.
     
@@ -32,11 +37,11 @@ def save_metadata(data, filepath="db_meta.json"):
         data: Данные для сохранения
         filepath: Путь к файлу для сохранения
     """
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with open(filepath, 'w', encoding=DEFAULT_ENCODING) as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def load_table_data(table_name, data_dir="data"):
+def load_table_data(table_name, data_dir=DATA_DIR):
     """
     Загружает данные таблицы из JSON-файла.
     
@@ -52,13 +57,13 @@ def load_table_data(table_name, data_dir="data"):
     
     filepath = os.path.join(data_dir, f"{table_name}.json")
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, 'r', encoding=DEFAULT_ENCODING) as f:
             return json.load(f)
     except FileNotFoundError:
         return []
 
 
-def save_table_data(table_name, data, data_dir="data"):
+def save_table_data(table_name, data, data_dir=DATA_DIR):
     """
     Сохраняет данные таблицы в JSON-файл.
     
@@ -71,5 +76,5 @@ def save_table_data(table_name, data, data_dir="data"):
     os.makedirs(data_dir, exist_ok=True)
     
     filepath = os.path.join(data_dir, f"{table_name}.json")
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with open(filepath, 'w', encoding=DEFAULT_ENCODING) as f:
         json.dump(data, f, indent=2, ensure_ascii=False)

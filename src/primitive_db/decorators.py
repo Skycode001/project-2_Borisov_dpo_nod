@@ -5,6 +5,18 @@
 
 import time
 
+# Константы для устранения "магических строк"
+CONFIRMATION_PROMPT_TEMPLATE = 'Вы уверены, что хотите выполнить "{}"? [y/n]: '
+CANCELLATION_MESSAGE = "Операция отменена."
+UNEXPECTED_ERROR_MESSAGE = "Произошла непредвиденная ошибка: {}"
+VALIDATION_ERROR_MESSAGE = "Ошибка валидации: {}"
+KEY_ERROR_MESSAGE = "Ошибка: Таблица или столбец {} не найден."
+FILE_NOT_FOUND_MESSAGE = (
+    "Ошибка: Файл данных не найден. "
+    "Возможно, база данных не инициализирована."
+)
+TIME_FORMAT_TEMPLATE = "Функция {} выполнилась за {:.3f} секунд."
+
 
 def handle_db_errors(func):
     """
@@ -20,20 +32,16 @@ def handle_db_errors(func):
         try:
             return func(*args, **kwargs)
         except FileNotFoundError:
-            msg = (
-                "Ошибка: Файл данных не найден. "
-                "Возможно, база данных не инициализирована."
-            )
-            print(msg)
+            print(FILE_NOT_FOUND_MESSAGE)
             return None
         except KeyError as e:
-            print(f"Ошибка: Таблица или столбец {e} не найден.")
+            print(KEY_ERROR_MESSAGE.format(e))
             return None
         except ValueError as e:
-            print(f"Ошибка валидации: {e}")
+            print(VALIDATION_ERROR_MESSAGE.format(e))
             return None
         except Exception as e:
-            print(f"Произошла непредвиденная ошибка: {e}")
+            print(UNEXPECTED_ERROR_MESSAGE.format(e))
             return None
     # Сохраняем имя и документацию оригинальной функции
     wrapper.__name__ = func.__name__
@@ -44,14 +52,11 @@ def handle_db_errors(func):
 def confirm_action(action_name):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            prompt_msg = (
-                f'Вы уверены, что хотите выполнить '
-                f'"{action_name}"? [y/n]: '
-            )
+            prompt_msg = CONFIRMATION_PROMPT_TEMPLATE.format(action_name)
             response = input(prompt_msg).strip().lower()
             
             if response != 'y':
-                print("Операция отменена.")
+                print(CANCELLATION_MESSAGE)
                 if args:
                     return args[0]  # ← возвращаем первый аргумент
                 return None
@@ -73,7 +78,7 @@ def log_time(func):
         end_time = time.monotonic()
         
         elapsed = end_time - start_time
-        print(f"Функция {func.__name__} выполнилась за {elapsed:.3f} секунд.")
+        print(TIME_FORMAT_TEMPLATE.format(func.__name__, elapsed))
         
         return result
     # Сохраняем имя и документацию

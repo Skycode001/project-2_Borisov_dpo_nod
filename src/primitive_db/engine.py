@@ -10,6 +10,45 @@ from prettytable import PrettyTable
 from . import core, parser, utils
 from .decorators import create_cacher
 
+# Константы для устранения "магических чисел" и строк
+DB_TITLE = "***База данных***"
+COMMAND_PROMPT = ">>>Введите команду: "
+EXIT_MESSAGE = "Выход из программы..."
+CACHE_KEY_SEPARATOR = "_"
+CANCELLED_INDICATOR = "отменена"
+SUCCESS_INDICATOR = "успешно"
+YES_RESPONSE = "y"
+HELP_TITLE = "\n***Операции с данными***"
+GENERAL_COMMANDS_TITLE = "\nОбщие команды:"
+UNKNOWN_COMMAND_MESSAGE = "Функции '{}' нет. Попробуйте снова."
+PARSE_ERROR_MESSAGE = "Ошибка парсинга: {}"
+UNEXPECTED_ERROR_MESSAGE = "Произошла ошибка: {}"
+NO_DATA_MESSAGE = "Нет данных для отображения."
+INTERRUPT_MESSAGE = "\n\nВыход из программы..."
+
+# Команды для проверки в парсерах
+INSERT_KEYWORD = "into"
+SELECT_KEYWORD = "from"
+UPDATE_SET_KEYWORD = "set"
+UPDATE_WHERE_KEYWORD = "where"
+DELETE_FROM_KEYWORD = "from"
+DELETE_WHERE_KEYWORD = "where"
+
+# Минимальное количество аргументов для команд
+MIN_INSERT_ARGS = 4
+MIN_SELECT_ARGS = 2
+MIN_UPDATE_ARGS = 6
+MIN_DELETE_ARGS = 4
+
+# Сообщения об ошибках использования
+CREATE_TABLE_USAGE = "create_table <таблица> <столбец1:тип> ..."
+DROP_TABLE_USAGE = "drop_table <таблица>"
+INSERT_USAGE = "insert into <таблица> values (значение1, значение2, ...)"
+SELECT_USAGE = "select from <таблица> [where <условие>]"
+UPDATE_USAGE = "update <таблица> set <столбец>=<значение> where <условие>"
+DELETE_USAGE = "delete from <таблица> where <условие>"
+INFO_USAGE = "info <таблица>"
+
 # Создаем кэшер для результатов запросов
 cache_result = create_cacher()
 
@@ -18,16 +57,17 @@ def clear_table_cache(table_name):
     """Очищает кэш для конкретной таблицы."""
     if hasattr(cache_result, '__closure__') and cache_result.__closure__:
         cache_dict = cache_result.__closure__[0].cell_contents
-        keys_to_remove = [key for key in cache_dict.keys() 
-                         if key.startswith(f"{table_name}_")]
+        keys_to_remove = [
+            key for key in cache_dict.keys()
+            if key.startswith(f"{table_name}{CACHE_KEY_SEPARATOR}")
+        ]
         for key in keys_to_remove:
             cache_dict.pop(key, None)
 
 
 def print_help():
     """Prints the help message for the current mode."""
-   
-    print("\n***Операции с данными***")
+    print(HELP_TITLE)
     print("Функции:")
     
     # Команды управления таблицами
@@ -64,7 +104,7 @@ def print_help():
     
     print("<command> info <имя_таблицы> - вывести информацию о таблице.")
     
-    print("\nОбщие команды:")
+    print(GENERAL_COMMANDS_TITLE)
     print("<command> exit - выход из программы")
     print("<command> help - справочная информация\n")
 
@@ -86,12 +126,12 @@ def parse_command(command_str):
         parts = shlex.split(command_str)
         return parts[0], parts[1:]
     except ValueError as e:
-        return "", [f"Ошибка парсинга: {e}"]
+        return "", [PARSE_ERROR_MESSAGE.format(e)]
 
 
 def parse_insert_command(args):
     """Парсит команду INSERT."""
-    if len(args) < 4 or args[0].lower() != "into":
+    if len(args) < MIN_INSERT_ARGS or args[0].lower() != INSERT_KEYWORD:
         return None, None
     
     table_name = args[1]
@@ -103,12 +143,12 @@ def parse_insert_command(args):
 
 def parse_select_command(args):
     """Парсит команду SELECT."""
-    if len(args) < 2 or args[0].lower() != "from":
+    if len(args) < MIN_SELECT_ARGS or args[0].lower() != SELECT_KEYWORD:
         return None, None
     
     table_name = args[1]
     
-    if len(args) > 3 and args[2].lower() == "where":
+    if len(args) > 3 and args[2].lower() == UPDATE_WHERE_KEYWORD:
         where_str = " ".join(args[3:])
         where_clause = parser.parse_where_clause(where_str)
         return table_name, where_clause
@@ -118,7 +158,7 @@ def parse_select_command(args):
 
 def parse_update_command(args):
     """Парсит команду UPDATE."""
-    if len(args) < 6:
+    if len(args) < MIN_UPDATE_ARGS:
         return None, None, None
     
     table_name = args[0]
@@ -128,10 +168,10 @@ def parse_update_command(args):
     found_where = False
     
     for i, arg in enumerate(args[1:], 1):
-        if arg.lower() == "set" and not found_set:
+        if arg.lower() == UPDATE_SET_KEYWORD and not found_set:
             found_set = True
             continue
-        elif arg.lower() == "where" and found_set:
+        elif arg.lower() == UPDATE_WHERE_KEYWORD and found_set:
             found_where = True
             continue
         
@@ -151,7 +191,9 @@ def parse_update_command(args):
 
 def parse_delete_command(args):
     """Парсит команду DELETE."""
-    if len(args) < 4 or args[0].lower() != "from" or args[2].lower() != "where":
+    if (len(args) < MIN_DELETE_ARGS or 
+        args[0].lower() != DELETE_FROM_KEYWORD or 
+        args[2].lower() != DELETE_WHERE_KEYWORD):
         return None, None
     
     table_name = args[1]
@@ -164,7 +206,7 @@ def parse_delete_command(args):
 def print_table_as_prettytable(table_data):
     """Выводит данные в виде PrettyTable."""
     if not table_data:
-        print("Нет данных для отображения.")
+        print(NO_DATA_MESSAGE)
         return
     
     table = PrettyTable()
@@ -178,17 +220,17 @@ def print_table_as_prettytable(table_data):
 
 def run():
     """Главная функция запуска приложения."""
-    print("***База данных***")
+    print(DB_TITLE)
     print_help()
     
     while True:
         try:
-            user_input = input(">>>Введите команду: ").strip()
+            user_input = input(COMMAND_PROMPT).strip()
             command, args = parse_command(user_input)
             metadata = utils.load_metadata()
             
             if command == "exit":
-                print("Выход из программы...")
+                print(EXIT_MESSAGE)
                 break
                 
             elif command == "help":
@@ -197,10 +239,7 @@ def run():
             # Управление таблицами
             elif command == "create_table":
                 if len(args) < 2:
-                    msg = (
-                        "Ошибка: Использование: "
-                        "create_table <таблица> <столбец1:тип> ..."
-                    )
+                    msg = f"Ошибка: Использование: {CREATE_TABLE_USAGE}"
                     print(msg)
                     continue
                 
@@ -209,13 +248,13 @@ def run():
                 )
                 print(message)
                 
-                if "успешно" in message.lower():
+                if SUCCESS_INDICATOR in message.lower():
                     utils.save_metadata(metadata)
                     utils.save_table_data(args[0], [])
                     
             elif command == "drop_table":
                 if len(args) != 1:
-                    print("Ошибка: Использование: drop_table <таблица>")
+                    print(f"Ошибка: Использование: {DROP_TABLE_USAGE}")
                     continue
 
                 result = core.drop_table(metadata, args[0])
@@ -224,10 +263,10 @@ def run():
                     metadata, message = result
 
                     # Выводим сообщение только если не "Операция отменена."
-                    if "отменена" not in message.lower():
+                    if CANCELLED_INDICATOR not in message.lower():
                         print(message)
                     
-                    if "успешно" in message.lower():
+                    if SUCCESS_INDICATOR in message.lower():
                         utils.save_metadata(metadata)
                         clear_table_cache(args[0])
                     
@@ -239,10 +278,7 @@ def run():
                 table_name, values = parse_insert_command(args)
                 
                 if table_name is None:
-                    msg = (
-                        "Ошибка: Использование: "
-                        "insert into <таблица> values (значение1, значение2, ...)"
-                    )
+                    msg = f"Ошибка: Использование: {INSERT_USAGE}"
                     print(msg)
                     continue
                 
@@ -252,7 +288,7 @@ def run():
                 )
                 
                 print(message)
-                if "успешно" in message.lower():
+                if SUCCESS_INDICATOR in message.lower():
                     utils.save_table_data(table_name, table_data)
                     clear_table_cache(table_name)
                 
@@ -260,10 +296,7 @@ def run():
                 table_name, where_clause = parse_select_command(args)
                 
                 if table_name is None:
-                    msg = (
-                        "Ошибка: Использование: "
-                        "select from <таблица> [where <условие>]"
-                    )
+                    msg = f"Ошибка: Использование: {SELECT_USAGE}"
                     print(msg)
                     continue
                 
@@ -273,7 +306,7 @@ def run():
                     filtered_data = core.select(table_data, where_clause)
                 else:
                     # Кэшируем только запросы с условиями
-                    cache_key = f"{table_name}_{str(where_clause)}"
+                    cache_key = f"{table_name}{CACHE_KEY_SEPARATOR}{str(where_clause)}"
                     
                     def execute_select():
                         table_data = utils.load_table_data(table_name)
@@ -287,10 +320,7 @@ def run():
                 table_name, set_clause, where_clause = parse_update_command(args)
                 
                 if table_name is None or not set_clause or not where_clause:
-                    msg = (
-                        "Ошибка: Использование: "
-                        "update <таблица> set <столбец>=<значение> where <условие>"
-                    )
+                    msg = f"Ошибка: Использование: {UPDATE_USAGE}"
                     print(msg)
                     continue
                 
@@ -311,10 +341,7 @@ def run():
                 table_name, where_clause = parse_delete_command(args)
                 
                 if table_name is None or not where_clause:
-                    msg = (
-                        "Ошибка: Использование: "
-                        "delete from <таблица> where <условие>"
-                    )
+                    msg = f"Ошибка: Использование: {DELETE_USAGE}"
                     print(msg)
                     continue
                 
@@ -333,7 +360,7 @@ def run():
                 
             elif command == "info":
                 if len(args) != 1:
-                    print("Ошибка: Использование: info <таблица>")
+                    print(f"Ошибка: Использование: {INFO_USAGE}")
                     continue
                 
                 table_name = args[0]
@@ -345,14 +372,14 @@ def run():
                 continue
                 
             else:
-                print(f"Функции '{command}' нет. Попробуйте снова.")
+                print(UNKNOWN_COMMAND_MESSAGE.format(command))
                 print_help()
                 
         except KeyboardInterrupt:
-            print("\n\nВыход из программы...")
+            print(INTERRUPT_MESSAGE)
             break
         except Exception as e:
-            print(f"Произошла ошибка: {e}")
+            print(UNEXPECTED_ERROR_MESSAGE.format(e))
 
 
 def main():
